@@ -176,7 +176,7 @@ class Stats(object):
 
         
 if __name__ == '__main__':
-    testURL="www.entwit.com"
+    testURL="www.google.com"
     a=Api(login="pythonbitly",apikey="R_06871db6b7fd31a4242709acaf1b6648")
     short=a.shorten(testURL)
     print "Short URL = %s" % short
