@@ -145,6 +145,10 @@ class Api():
         # to check first, rather than try and catch the exception
         if 'ERROR' in data or data['statusCode'] == 'ERROR':
             raise BitlyError, data['errorMessage']
+        for key in data['results']:
+            if type(data['results']) is dict and type(data['results'][key]) is dict:
+                if 'statusCode' in data['results'][key] and data['results'][key]['statusCode'] == 'ERROR':
+                    raise BitlyError, data['results'][key]['errorMessage'] 
        
 class Stats(object):
     '''A class representing the Statistics returned by the bitly api.
@@ -172,7 +176,7 @@ class Stats(object):
 
         
 if __name__ == '__main__':
-    testURL="www.google.com"
+    testURL="www.entwit.com"
     a=Api(login="pythonbitly",apikey="R_06871db6b7fd31a4242709acaf1b6648")
     short=a.shorten(testURL)
     print "Short URL = %s" % short
