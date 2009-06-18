@@ -46,18 +46,34 @@ class Api():
         self._urllib = urllib2
         
     def shorten(self,longURL):
-        """ Given a long url, returns a shorter one.  """
-        if not longURL.startswith("http"):
-            longURL = "http://" + longURL
+        """ 
+            Takes either:
+            A long URL string and returns shortened URL string
+            Or a list of long URL strings and returnes a list of shortened URL strings.
+        """
+        if not isinstance(longURL, list):
+            longURL = [longURL]
+        
+        for index,url in enumerate(longURL):
+            if not url.startswith("http"):
+                longURL[index] = "http://" + url
             
         request = self._getURL("shorten",longURL)
         result = self._fetchUrl(request)
         json = simplejson.loads(result)
         self._CheckForError(json)
-        if json['results'][longURL]['shortKeywordUrl'] == "":
-            return json['results'][longURL]['shortUrl']
+        
+        res = []
+        for item in json['results'].values():
+            if item['shortKeywordUrl'] == "":
+                res.append(item['shortUrl'])
+            else:
+                res.append(item['shortKeywordUrl'])
+        
+        if len(res) == 1:
+            return res[0]
         else:
-            return json['results'][longURL]['shortKeywordUrl']
+            return res
 
     def expand(self,shortURL):
         """ Given a bit.ly url or hash, return long source url """
@@ -103,18 +119,21 @@ class Api():
         '''
         self._urllib = urllib
     
-    def _getURL(self,verb,patamVal):   
-        params = {}
-        params.update({
-          'version': BITLY_API_VERSION,
-          'format': 'json',
-          'login': self.login,
-          'apiKey': self.apikey,
-          })
+    def _getURL(self,verb,paramVal): 
+        if not isinstance(paramVal, list):
+            paramVal = [paramVal]
+              
+        params = [
+                  ('version',BITLY_API_VERSION),
+                  ('format','json'),
+                  ('login',self.login),
+                  ('apiKey',self.apikey),
+            ]
         
         verbParam = VERBS_PARAM[verb]   
         if verbParam:
-            params.update({ verbParam: patamVal, })
+            for val in paramVal:
+                params.append(( verbParam,val ))
    
         encoded_params = urllib.urlencode(params)
         return "%s%s?%s" % (BITLY_BASE_URL,verb,encoded_params)
@@ -176,10 +195,14 @@ class Stats(object):
 
         
 if __name__ == '__main__':
-    testURL="www.google.com"
+    testURL1="www.yahoo.com"
+    testURL2="www.cnn.com"
     a=Api(login="pythonbitly",apikey="R_06871db6b7fd31a4242709acaf1b6648")
-    short=a.shorten(testURL)
+    short=a.shorten(testURL1)    
     print "Short URL = %s" % short
+    urlList=[testURL1,testURL2]
+    shortList=a.shorten(urlList)
+    print "Short URL list = %s" % shortList
     long=a.expand(short)
     print "Expanded URL = %s" % long
     info=a.info(short)
