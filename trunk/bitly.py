@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.utils import simplejson
+import simplejson
 import urllib,urllib2
 import urlparse
 import string
