@@ -49,13 +49,13 @@ class Api(object):
         """ 
             Takes either:
             A long URL string and returns shortened URL string
-            Or a list of long URL strings and returnes a list of shortened URL strings.
+            Or a list of long URL strings and returns a list of shortened URL strings.
         """
         if not isinstance(longURL, list):
             longURL = [longURL]
         
         for index,url in enumerate(longURL):
-            if not url.startswith("http"):
+            if not '://' in url:
                 longURL[index] = "http://" + url
             
         request = self._getURL("shorten",longURL)
