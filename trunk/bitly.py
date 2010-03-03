@@ -45,7 +45,7 @@ class Api(object):
         self.apikey = apikey
         self._urllib = urllib2
         
-    def shorten(self,longURL):
+    def shorten(self,longURL,params={}):
         """ 
             Takes either:
             A long URL string and returns shortened URL string
@@ -58,7 +58,7 @@ class Api(object):
             if not '://' in url:
                 longURL[index] = "http://" + url
             
-        request = self._getURL("shorten",longURL)
+        request = self._getURL("shorten",longURL,params)
         result = self._fetchUrl(request)
         json = simplejson.loads(result)
         self._CheckForError(json)
@@ -75,37 +75,37 @@ class Api(object):
         else:
             return res
 
-    def expand(self,shortURL):
+    def expand(self,shortURL,params={}):
         """ Given a bit.ly url or hash, return long source url """
-        request = self._getURL("expand",shortURL)
+        request = self._getURL("expand",shortURL,params)
         result = self._fetchUrl(request)
         json = simplejson.loads(result)
         self._CheckForError(json)
         return json['results'][string.split(shortURL, '/')[-1]]['longUrl']
 
-    def info(self,shortURL):
+    def info(self,shortURL,params={}):
         """ 
         Given a bit.ly url or hash, 
         return information about that page, 
         such as the long source url
         """
-        request = self._getURL("info",shortURL)
+        request = self._getURL("info",shortURL,params)
         result = self._fetchUrl(request)
         json = simplejson.loads(result)
         self._CheckForError(json)
         return json['results'][string.split(shortURL, '/')[-1]]
 
-    def stats(self,shortURL):
+    def stats(self,shortURL,params={}):
         """ Given a bit.ly url or hash, return traffic and referrer data.  """
-        request = self._getURL("stats",shortURL)
+        request = self._getURL("stats",shortURL,params)
         result = self._fetchUrl(request)
         json = simplejson.loads(result)
         self._CheckForError(json)
         return Stats.NewFromJsonDict(json['results'])
 
-    def errors(self):
+    def errors(self,params={}):
         """ Get a list of bit.ly API error codes. """
-        request = self._getURL("errors","")
+        request = self._getURL("errors","",params)
         result = self._fetchUrl(request)
         json = simplejson.loads(result)
         self._CheckForError(json)
@@ -119,17 +119,20 @@ class Api(object):
         '''
         self._urllib = urllib
     
-    def _getURL(self,verb,paramVal): 
+    def _getURL(self,verb,paramVal,more_params={}): 
         if not isinstance(paramVal, list):
             paramVal = [paramVal]
               
-        params = [
-                  ('version',BITLY_API_VERSION),
-                  ('format','json'),
-                  ('login',self.login),
-                  ('apiKey',self.apikey),
-            ]
-        
+        params = {
+                  'version':BITLY_API_VERSION,
+                  'format':'json',
+                  'login':self.login,
+                  'apiKey':self.apikey,
+            }
+
+        params.update(more_params)
+        params = params.items() 
+                
         verbParam = VERBS_PARAM[verb]   
         if verbParam:
             for val in paramVal:
@@ -200,6 +203,8 @@ if __name__ == '__main__':
     a=Api(login="pythonbitly",apikey="R_06871db6b7fd31a4242709acaf1b6648")
     short=a.shorten(testURL1)    
     print "Short URL = %s" % short
+    short=a.shorten(testURL1,{'history':1})    
+    print "Short URL with history = %s" % short
     urlList=[testURL1,testURL2]
     shortList=a.shorten(urlList)
     print "Short URL list = %s" % shortList
