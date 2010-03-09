@@ -45,35 +45,39 @@ class Api(object):
         self.apikey = apikey
         self._urllib = urllib2
         
-    def shorten(self,longURL,params={}):
+    def shorten(self,longURLs,params={}):
         """ 
             Takes either:
             A long URL string and returns shortened URL string
             Or a list of long URL strings and returns a list of shortened URL strings.
         """
-        if not isinstance(longURL, list):
-            longURL = [longURL]
+        want_result_list = True
+        if not isinstance(longURLs, list):
+            longURLs = [longURLs]
+            want_result_list = False
         
-        for index,url in enumerate(longURL):
+        for index,url in enumerate(longURLs):
             if not '://' in url:
-                longURL[index] = "http://" + url
+                longURLs[index] = "http://" + url
             
-        request = self._getURL("shorten",longURL,params)
+        request = self._getURL("shorten",longURLs,params)
         result = self._fetchUrl(request)
         json = simplejson.loads(result)
         self._CheckForError(json)
         
-        res = []
-        for item in json['results'].values():
-            if item['shortKeywordUrl'] == "":
-                res.append(item['shortUrl'])
-            else:
-                res.append(item['shortKeywordUrl'])
-        
-        if len(res) == 1:
-            return res[0]
-        else:
+        results = json['results']
+        res = [self._extract_short_url(results[url]) for url in longURLs]
+
+        if want_result_list:
             return res
+        else:
+            return res[0]
+
+    def _extract_short_url(self,item):
+        if item['shortKeywordUrl'] == "":
+            return item['shortUrl']
+        else:
+            return item['shortKeywordUrl']
 
     def expand(self,shortURL,params={}):
         """ Given a bit.ly url or hash, return long source url """
@@ -216,3 +220,6 @@ if __name__ == '__main__':
     print "User clicks %s, total clicks: %s" % (stats.user_clicks,stats.total_clicks)
     errors=a.errors()
     print "Errors: %s" % errors
+    testURL3=["www.google.com"]
+    short=a.shorten(testURL3) 
+    print "Short url in list = %s" % short
