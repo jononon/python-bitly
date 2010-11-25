@@ -14,11 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import simplejson
 import urllib,urllib2
 import urlparse
 import string
-
+try:
+   import simplejson
+except ImportError:
+   import json as simplejson
+   
 BITLY_BASE_URL = "http://api.bit.ly/"
 BITLY_API_VERSION = "2.0.1"
 
